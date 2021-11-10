@@ -9,13 +9,11 @@ Car Price Prediction is a regression machine learning problem statement.
 * Overview
 * Dataset
 * Installation
-* Deployment
-* Documentation
-* Directory Tree
 * Technology Used
 * Bug/Feature Request
 * Future scope of project
 ## Demo
+![Uploading Car_Price_prediction.gif…]()
 
 
 ## Overview  📜
