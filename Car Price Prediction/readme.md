@@ -13,7 +13,8 @@ Car Price Prediction is a regression machine learning problem statement.
 * Bug/Feature Request
 * Future scope of project
 ## Demo
-![Uploading Car_Price_prediction.gif…]()
+![Car_Price_prediction](https://user-images.githubusercontent.com/47842305/141054996-13d86889-c352-450c-912b-580ad9654afe.gif)
+
 
 
 ## Overview  📜
