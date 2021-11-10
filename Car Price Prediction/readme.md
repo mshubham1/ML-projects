@@ -25,11 +25,11 @@ The application is a web app which is developed in Flask Framework.
 * Model Training - Trained the model with different regressor algo and obtained the Random Forest Regressor with best score.
 
 ```bash
-      Model	                  MAE	  MSE	  RMSE
+      Model	                    MAE	       MSE	   RMSE
 0	Decision Tree Regressor	 0.7440	 2.3642  1.5376
-1	Random Forest Regressor	 0.5204	 0.5357	 0.7319
-2	XGB Regressor	         0.5067	 0.5859  0.7654
-3	Linear Regression	     0.8731	 1.3856	 1.1771
+1	Random Forest Regressor	 0.5204	 0.5357  0.7319
+2	XGB Regressor	       0.5067	 0.5859  0.7654
+3	Linear Regression	       0.8737      1.3856  1.1771
 ```
 ## Dataset  
 Dataset is available in Kaggle by CarDheko Company.
