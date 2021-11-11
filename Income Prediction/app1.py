@@ -1,18 +1,36 @@
 from flask import Flask,render_template,request
 from log_file.logger import Logs
 import pandas as pd
-import pickle
+import joblib
 import numpy as np
 import pymongo
 import ssl
 
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+data=pd.read_csv("data/incomeData.csv")
+data=data.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+data.replace('?',np.NaN,inplace=True)
+columns_with_nan = ['workclass', 'occupation', 'native-country']
+for col in columns_with_nan:
+    data[col].fillna(data[col].mode()[0], inplace=True)
+from sklearn.preprocessing import LabelEncoder
+encoder = LabelEncoder()
+for col in data.columns:
+    if data[col].dtypes == 'object':
+        data[col] = encoder.fit_transform(data[col])
+X=data.drop(['Income'],axis=1)
+y=data['Income']
+X = X.drop(['workclass', 'education', 'race', 'sex',
+            'capital-loss', 'native-country'], axis=1)
+X_scaled=scaler.fit_transform(X)
 
 log = Logs("log_file/log_data.log")
 log.addLog("INFO", "Execution started Successfully !")
 
 # configuring logging method
-pickle_in = open("Random.pkl","rb")
-model=pickle.load(pickle_in)
+pickle_in = open("model_rf.pkl","rb")
+model=joblib.load(pickle_in)
 
 app = Flask(__name__)
 # route for main page
@@ -20,9 +38,7 @@ app = Flask(__name__)
 def index():
     return render_template("index.html")
 
-def prediction1(age, fnlwgt, education_num, hours_per_week, workclass, marital_status, occupation, relationship, race, sex, native_country):
-    dct_workclass={'State-gov':6,'Self-emp-not-inc':5,'Private':3,'Federal-gov':0, 'Local-gov':1,
-    'Self-emp-inc': 4,'Without-pay':7,'Never-worked':2 }
+def prediction1(age, fnlwgt, education_num,  marital_status, occupation, relationship, capital_gain, hours_per_week):
     dct_marital_status={'Never-married':4,'Married-civ-spouse':2 ,'Divorced':0, 'Married-spouse-absent':3,
     'Separated':5 ,'Married-AF-spouse':1, 'Widowed':6}
     dct_occupation ={'Adm-clerical':0 ,'Exec-managerial':3 ,'Handlers-cleaners':5 ,'Prof-specialty':9,
@@ -30,35 +46,15 @@ def prediction1(age, fnlwgt, education_num, hours_per_week, workclass, marital_s
      'Farming-fishing':4, 'Machine-op-inspct':6 ,'Tech-support':12 ,'Protective-serv':10,
      'Armed-Forces':1, 'Priv-house-serv':8}
     dct_relationship= {'Not-in-family':1 ,'Husband':0, 'Wife':5 ,'Own-child':3 ,'Unmarried':4, 'Other-relative':2}
-    dct_native_country ={'United-States':38, 'Cuba':4, 'Jamaica':22, 'India':18, 'Mexico':25, 'South':34, 'Puerto-Rico':32,
-     'Honduras':15, 'England':8, 'Canada':1, 'Germany':10, 'Iran':19, 'Philippines':29, 'Italy':21,
-     'Poland':30, 'Columbia':3, 'Cambodia':0 ,'Thailand':36, 'Ecuador':6 ,'Laos':24 ,'Taiwan':35,
-     'Haiti':13, 'Portugal':31, 'Dominican-Republic':5, 'El-Salvador':7, 'France':9,
-     'Guatemala':12, 'China':2, 'Japan':23 ,'Yugoslavia':40, 'Peru':28,
-     'Outlying-US(Guam-USVI-etc)':27, 'Scotland':33, 'Trinadad&Tobago':37,'Greece':11,                 
-     'Nicaragua':26, 'Vietnam':39, 'Hong':16, 'Ireland':20, 'Hungary':17, 'Holand-Netherlands':14}
-    dct_race={'White':4, 'Black':2, 'Asian-Pac-Islander':1, 'Amer-Indian-Eskimo':0 ,'Other':3}
-    dct_sex={'Male':1,'Female':0}
     
-    cols=['age', 'fnlwgt', 'education_num', 'hours_per_week', 'workclass', 'marital_status', 'occupation', 'relationship', 'race', 'sex', 'native_country']
-    X=[0 for i in range(1,12)]
-    X[1]=age
-    X[2]=fnlwgt
-    X[3]=education_num
-    X[4]=hours_per_week
-    X[5]=dct_workclass[workclass]
-    X[6]=dct_marital_status[marital_status]
-    X[7]=dct_occupation[occupation]
-    X[8]=dct_relationship[relationship]
-    X[9]=dct_race[race]
-    X[10]=dct_sex[sex]
-    X[11]=dct_native_country[native_country]
-    test_row = pd.DataFrame(X).transpose()
-    test_row.columns = cols
-    result = model.predict(test_row)
-    print(result)
+    #cols=['age', 'fnlwgt', 'education_num','marital_status', 'occupation','relationship','capital_gain', 'hours_per_week']
+    X=[age,fnlwgt,education_num,dct_marital_status[marital_status],dct_occupation[occupation],dct_relationship[relationship],capital_gain,hours_per_week]
+    final_features = [np.array(X)]
+    print(final_features)
+    print(scaler.transform(final_features))
+    result = model.predict(scaler.transform(final_features))
     return result
-
+    
 
 # route for prediction 
 @app.route('/predict', methods=['POST','GET'])
@@ -66,21 +62,17 @@ def predict():
     if request.method == "POST":
         age = request.form.get("age")
         fnlwgt = request.form.get("fnlwgt")
-        education_num = request.form.get("education_num")
-        hours_per_week = request.form.get("hours_per_week")
-        
-        workclass = request.form.get("workclass")
+        education_num = request.form.get("education_num")  
         marital_status =request.form.get("marital_status")
         occupation =request.form.get("occupation")
         relationship =request.form.get("relationship")
-        race =request.form.get("race")
-        sex =request.form.get("sex")
-        native_country =request.form.get("native_country")
+        capital_gain =request.form.get("capital_gain")
+        hours_per_week = request.form.get("hours_per_week")
         log.addLog("INFO", "Successfully retrieved information from the user... !")
-        input1=[age, fnlwgt, education_num, hours_per_week, workclass, marital_status, occupation, relationship, race, sex, native_country]
+        input1=[age, fnlwgt, education_num,  marital_status, occupation, relationship, capital_gain, hours_per_week]
         print(input1)
         print(model)
-        result = prediction1(input1)
+        result = prediction1(age, fnlwgt, education_num,  marital_status, occupation, relationship, capital_gain, hours_per_week)
         print(result)
         
         #Data Ingestion
@@ -111,14 +103,11 @@ def predict():
                     'age' :age ,
                     'fnlwgt':fnlwgt ,
                     'education_num' :education_num ,
-                    'hours_per_week' : hours_per_week ,
-                    'workclass' : workclass,
                     'marital_status' :marital_status,
                     'occupation' : occupation ,
                     'relationship':relationship,
-                    'race': race,
-                    'sex': sex,
-                    'native_country' : native_country 
+                    'capital_gain' : capital_gain ,
+                    'hours_per_week' : hours_per_week 
                 }
             collection.insert_one(info)
             log.addLog("INFO", "Data Inserted in the Collection Successfully !!")
@@ -128,10 +117,13 @@ def predict():
             log.addLog("ERROR", "found error in info json :{}".format(e))
             return render_template('index.html')
         log.addLog("INFO", "Prediction done Successfully !")
-        if result==0:
-            return render_template('index.html',result="the Income is : '<=50K'")
-        else:
-            return render_template('index.html',result="the Income is : '>50K'")
+
+        if result == 1:
+            output = "Income is more than 50K"
+        elif result == 0:
+            output = "Income is less than 50K"
+        
+        return render_template('index.html', prediction_text='{}'.format(output))
 
     else:
         log.addLog("INFO", "Return from the Predict Route!!")
@@ -141,7 +133,7 @@ def predict():
 @app.route("/database")
 def database():
     
-    heading = ('age', 'fnlwgt', 'education_num', 'hours_per_week', 'workclass', 'marital_status', 'occupation', 'relationship', 'race', 'sex', 'native_country')
+    heading = ('age', 'fnlwgt', 'education_num','marital_status', 'occupation','relationship','capital_gain', 'hours_per_week')
     all_data = ""
     try:
         default_connection_url ="mongodb+srv://mafia123:mafia123@cluster0.j7nj9.mongodb.net/visibility_prediction?retryWrites=true&w=majority"
@@ -153,7 +145,7 @@ def database():
         log.addLog("INFO", "Retriviwed all data from Collection user_data !")
         ele=[]
         for data in collection.find():
-            ele.append([data['age'],data['fnlwgt'],data['education_num'],data['hours_per_week'],data['workclass'],data['marital_status'],data['occupation'],data['relationship'],data['race'],data['sex'],data['native_country']])
+            ele.append([data['age'],data['fnlwgt'],data['education_num'],data['marital_status'],data['occupation'],data['relationship'],data['capital_gain'],data['hours_per_week']])
         client.close()
         log.addLog("INFO", "Closing the Connection !")
 

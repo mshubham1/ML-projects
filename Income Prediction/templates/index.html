@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Census Income Predictor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+  <div class="login">
+    <h1 style="color:#F7F706">Census Income Predictor</h1>
+
+    <form action="{{ url_for('predict')}}" method="post">
+      <input type="text" name="age" id="second" placeholder="Age" required="required" pattern="\d*" title="Numbers only, please." />   <br><br>
+      <input type="text" name="fnlwgt" id="second" placeholder="Fnlwgt" required="required" pattern="\d*" title="Numbers only, please." /> <br><br>
+      <input type="text" name="education_num" id="second" placeholder="Years of Education" required="required" pattern="\d*" title="Numbers only, please." /> <br><br>
+      <select type="text" name="marital_status" id="second" placeholder="Marital Status" required="required"> <br><br>
+        <option value="none" selected disabled hidden>Select Marital-Status</option>
+        <option value="Never-married">Never-married</option>
+        <option value="Married-civ-spouse">Married-civ-spouse</option>
+        <option value="Divorced">Divorced</option>
+        <option value="Separated">Separated</option>
+        <option value="Widowed">Widowed</option>
+        <option value="Married-spouse-absent">Married-spouse-absent</option>
+        <option value="Married-AF-spouse">Married-AF-spouse</option>
+      </select> <br><br>
+
+      <select type="text" name="occupation" id="second" placeholder="occupation" required="required"> 
+        <option value="none" selected disabled hidden>Select occupation</option>
+        <option value="Adm-clerical">Adm-clerical</option>
+        <option value="Exec-managerial">Exec-managerial</option>
+        <option value="Handlers-cleaners">Handlers-cleaners</option>
+        <option value="Prof-specialty">Prof-specialty</option>
+        <option value="Other-service">Other-service</option>
+        <option value="Sales">Sales</option>
+        <option value="Transport-moving">Transport-moving</option>
+        <option value="Farming-fishing">Farming-fishing</option>
+        <option value="Machine-op-inspct">Machine-op-inspct</option>
+        <option value="Tech-support">Tech-support</option>
+        <option value="Protective-serv">Protective-serv</option>
+        <option value="Armed-Forces">Armed-Forces</option>
+        <option value="Priv-house-serv">Priv-house-serv</option>
+      </select> <br><br>
+
+      <select type="text" name="relationship" id="second" placeholder="relationship" required="required">
+        <option value="none" selected disabled hidden>Select relationship</option>
+        <option value="Not-in-family">Not-in-family</option>
+        <option value="Husband">Husband</option>
+        <option value="Wife">Wife</option>
+        <option value="Own-child">Own-child</option>
+        <option value="Unmarried">Unmarried</option>
+        <option value="Other-relative">Other-relative</option>
+      </select>  <br><br>
+
+      <input type="text" name="capital_gain" id="second" placeholder="capital_gain" required="required" pattern="\d*" title="Numbers only, please. [range = 1 to 20]" /> <br><br>
+      <input type="text" name="hours_per_week" id="second" placeholder="Hours of work per week" required="required" pattern="\d*" title="Numbers only, please." /> <br><br>
+
+      <button type="submit" id="sub">Predict</button>
+    </form>
+
+    <br>
+    <br>
+    <h1 style="color: #F7F706"> {{ prediction_text }} </h1>
+
+  </div>
+  <style>
+   body {
+            background-image: url({{ url_for('static', filename='image/image.jpg') }});
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+            opacity: 0.9;
+            text-align: center;
+            padding: 0px;
+        }
+   
+        #sub {
+            width: 230px;
+            height: 48px;
+            text-align: center;
+            border-radius: 14px;
+            font-size: 20px;
+        }
+        
+        #sub:hover {
+            background-color: grey;
+        }
+        
+        #second {
+            border-radius: 14px;
+            width: 230px;
+            height: 25px;
+            font-size: 20px;
+            text-align: center;
+        }
+  </style>
+
+
+</body>
+
+</html>
